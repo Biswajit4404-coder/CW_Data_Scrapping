@@ -1,0 +1,34 @@
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+# IMDB page URL
+imdb_url = "https://www.imdb.com/chart/top" 
+
+# request for the imdb page
+response = requests.get(imdb_url)
+if response.status_code != 200:
+    print("Failed to get IMDB page. Status code:", response.status_code)
+    exit()
+
+# Parse the HTML
+soup = BeautifulSoup(response.content, 'html.parser')
+
+# Extract movie titles
+movies = soup.find_all('td', class_='titleColumn')
+
+# Details data
+imdb_data = []
+for movie in movies:
+    title = movie.a.text.strip()
+    cast = movie.a['title']
+    imdb_data.append({"Movie Title": title, "Cast": cast})
+
+# Save to CSV
+csv_file = "IMDB_Movies_List.csv"
+with open(csv_file, "w", newline="", encoding="utf-8") as file:
+    writer = csv.DictWriter(file, fieldnames=["Movie Title", "Cast"])
+    writer.writeheader()
+    writer.writerows(imdb_data)
+
+print(f"IMDB data saved to '{csv_file}'")
